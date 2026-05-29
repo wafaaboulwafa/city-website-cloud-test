@@ -19,7 +19,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [2/5] Building and Tagging CityApi...
-docker build -t city-api ./CityApi
+docker build --provenance=false -t city-api ./CityApi
 docker tag city-api:latest %ECR_REGISTRY%/%ECR_REPOSITORY%:api-%IMAGE_TAG%
 if %errorlevel% neq 0 (
     echo [ERROR] CityApi build failed.
@@ -30,14 +30,15 @@ echo.
 echo [3/5] Pushing CityApi (tag: api-%IMAGE_TAG%) to ECR...
 docker push %ECR_REGISTRY%/%ECR_REPOSITORY%:api-%IMAGE_TAG%
 if %errorlevel% neq 0 (
-    echo [ERROR] CityApi push failed.
+    echo [ERROR] CityApi push failed. Ensure the ECR repository '%ECR_REPOSITORY%' exists.
     exit /b %errorlevel%
 )
 
 echo.
 echo [4/5] Building and Tagging CityWeb...
-docker build -t city-web ./CityWeb
+docker build --provenance=false -t city-web ./CityWeb
 docker tag city-web:latest %ECR_REGISTRY%/%ECR_REPOSITORY%:web-%IMAGE_TAG%
+
 if %errorlevel% neq 0 (
     echo [ERROR] CityWeb build failed.
     exit /b %errorlevel%
