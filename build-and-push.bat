@@ -4,8 +4,7 @@ SETLOCAL EnableDelayedExpansion
 :: --- CONFIGURATION ---
 SET AWS_REGION=us-east-1
 SET AWS_ACCOUNT_ID=YOUR_ACCOUNT_ID
-SET ECR_REPO_API=city-api
-SET ECR_REPO_WEB=city-web
+SET ECR_REPO=city-project
 SET IMAGE_TAG=latest
 :: ---------------------
 
@@ -21,41 +20,42 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [2/5] Building and Tagging CityApi...
-docker build -t %ECR_REPO_API% ./CityApi
-docker tag %ECR_REPO_API%:%IMAGE_TAG% %ECR_REGISTRY%/%ECR_REPO_API%:%IMAGE_TAG%
+docker build -t city-api ./CityApi
+docker tag city-api:latest %ECR_REGISTRY%/%ECR_REPO%:api-%IMAGE_TAG%
 if %errorlevel% neq 0 (
     echo [ERROR] CityApi build failed.
     exit /b %errorlevel%
 )
 
 echo.
-echo [3/5] Pushing CityApi to ECR...
-docker push %ECR_REGISTRY%/%ECR_REPO_API%:%IMAGE_TAG%
+echo [3/5] Pushing CityApi (tag: api-%IMAGE_TAG%) to ECR...
+docker push %ECR_REGISTRY%/%ECR_REPO%:api-%IMAGE_TAG%
 if %errorlevel% neq 0 (
-    echo [ERROR] CityApi push failed. Ensure the ECR repository '%ECR_REPO_API%' exists.
+    echo [ERROR] CityApi push failed. Ensure the ECR repository '%ECR_REPO%' exists.
     exit /b %errorlevel%
 )
 
 echo.
 echo [4/5] Building and Tagging CityWeb...
-docker build -t %ECR_REPO_WEB% ./CityWeb
-docker tag %ECR_REPO_WEB%:%IMAGE_TAG% %ECR_REGISTRY%/%ECR_REPO_WEB%:%IMAGE_TAG%
+docker build -t city-web ./CityWeb
+docker tag city-web:latest %ECR_REGISTRY%/%ECR_REPO%:web-%IMAGE_TAG%
 if %errorlevel% neq 0 (
     echo [ERROR] CityWeb build failed.
     exit /b %errorlevel%
 )
 
 echo.
-echo [5/5] Pushing CityWeb to ECR...
-docker push %ECR_REGISTRY%/%ECR_REPO_WEB%:%IMAGE_TAG%
+echo [5/5] Pushing CityWeb (tag: web-%IMAGE_TAG%) to ECR...
+docker push %ECR_REGISTRY%/%ECR_REPO%:web-%IMAGE_TAG%
 if %errorlevel% neq 0 (
-    echo [ERROR] CityWeb push failed. Ensure the ECR repository '%ECR_REPO_WEB%' exists.
+    echo [ERROR] CityWeb push failed. Ensure the ECR repository '%ECR_REPO%' exists.
     exit /b %errorlevel%
 )
 
 echo.
 echo ===================================================
-echo [SUCCESS] All images built and pushed to AWS ECR.
-echo Registry: %ECR_REGISTRY%
+echo [SUCCESS] Both images pushed to the SAME repository.
+echo Repository: %ECR_REGISTRY%/%ECR_REPO%
+echo Tags: api-%IMAGE_TAG%, web-%IMAGE_TAG%
 echo ===================================================
 pause

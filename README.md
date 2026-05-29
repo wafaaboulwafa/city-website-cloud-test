@@ -41,10 +41,16 @@ docker-compose up -d --build
 ## AWS Fargate Deployment Notes
 
 ### 1. Container Images
-Build and push the images to **Amazon ECR**:
+Build and push the images to **Amazon ECR** (using the provided `build-and-push.bat` or manually):
 ```bash
+# Example for a single repository 'city-project'
 docker build -t city-api ./CityApi
+docker tag city-api:latest YOUR_ACCOUNT.dkr.ecr.REGION.amazonaws.com/city-project:api-latest
+docker push YOUR_ACCOUNT.dkr.ecr.REGION.amazonaws.com/city-project:api-latest
+
 docker build -t city-web ./CityWeb
+docker tag city-web:latest YOUR_ACCOUNT.dkr.ecr.REGION.amazonaws.com/city-project:web-latest
+docker push YOUR_ACCOUNT.dkr.ecr.REGION.amazonaws.com/city-project:web-latest
 ```
 
 ### 2. Networking
