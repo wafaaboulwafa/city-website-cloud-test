@@ -38,24 +38,23 @@ docker-compose up -d --build
 -   **Website**: [http://localhost:8080](http://localhost:8080)
 -   **API (Swagger)**: [http://localhost:5000](http://localhost:5000)
 
-## AWS Fargate Deployment Notes
+## AWS Fargate Deployment
 
-### 1. Container Images
-Build and push the images to **Amazon ECR** (using the provided `build-and-push.bat` or manually):
+### 1. Build and Push Images
+Use the provided `build-and-push.bat` script to build and push both images to a single Amazon ECR repository using service-specific tags:
+
 ```bash
-# Example for a single repository 'city-project'
-docker build -t city-api ./CityApi
-docker tag city-api:latest YOUR_ACCOUNT.dkr.ecr.REGION.amazonaws.com/city-project:api-latest
-docker push YOUR_ACCOUNT.dkr.ecr.REGION.amazonaws.com/city-project:api-latest
-
-docker build -t city-web ./CityWeb
-docker tag city-web:latest YOUR_ACCOUNT.dkr.ecr.REGION.amazonaws.com/city-project:web-latest
-docker push YOUR_ACCOUNT.dkr.ecr.REGION.amazonaws.com/city-project:web-latest
+.\build-and-push.bat
 ```
 
+The script is configured for:
+-   **Registry**: `248732772276.dkr.ecr.ap-south-1.amazonaws.com`
+-   **Repository**: `city-project`
+-   **Tags**: `api-latest` and `web-latest`
+
 ### 2. Networking
--   Deploy the services into an ECS Cluster.
--   Use **AWS Cloud Map** or an **Internal Load Balancer** for service discovery between `CityWeb` and `CityApi`.
+-   Deploy the services into an ECS Cluster using the **Fargate** launch type.
+-   Use **AWS Cloud Map** (Service Discovery) or an **Internal Load Balancer** to allow `CityWeb` to communicate with `CityApi`.
 
 ### 3. Configuration (Environment Variables)
 In your ECS Task Definitions, set the following:
@@ -63,10 +62,11 @@ In your ECS Task Definitions, set the following:
 -   **CityApi**:
     -   `ConnectionStrings__DefaultConnection`: Point to your **Amazon RDS** (MSSQL) endpoint.
 -   **CityWeb**:
-    -   `ApiSettings__CityApiBaseUrl`: Point to the internal URL of your `CityApi` service.
+    -   `ApiSettings__CityApiBaseUrl`: Point to the internal URL of your `CityApi` service (e.g., `http://city-api.local:8080`).
 
 ## Project Structure
 -   `/CityWeb`: Razor Pages project.
 -   `/CityApi`: Web API project with EF Core logic.
 -   `docker-compose.yml`: Local orchestration.
 -   `CityProject.sln`: Visual Studio Solution.
+-   `build-and-push.bat`: AWS ECR automation script.
