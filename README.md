@@ -48,25 +48,50 @@ Use the provided `build-and-push.bat` script to build and push both images to a 
 ```
 
 The script is configured for:
+-   **Region**: `ap-south-1`
 -   **Registry**: `248732772276.dkr.ecr.ap-south-1.amazonaws.com`
 -   **Repository**: `city-project`
 -   **Tags**: `api-latest` and `web-latest`
 
-### 2. Networking
--   Deploy the services into an ECS Cluster using the **Fargate** launch type.
--   Use **AWS Cloud Map** (Service Discovery) or an **Internal Load Balancer** to allow `CityWeb` to communicate with `CityApi`.
+### 2. Infrastructure Provisioning (CloudFormation)
+The project includes a comprehensive AWS CloudFormation template (`cloudformation.yaml`) that provisions a production-ready environment:
 
-### 3. Configuration (Environment Variables)
-In your ECS Task Definitions, set the following:
+*   **Compute**: ECS Fargate services for Frontend and Backend.
+*   **Database**: Amazon RDS for SQL Server Express.
+*   **Networking**:
+    *   **Application Load Balancer (ALB)**: External entry point for the website.
+    *   **AWS Cloud Map**: Internal Service Discovery (`cityproject.local`) for service-to-service communication.
+*   **Observability**: CloudWatch Log Groups for centralized logging.
 
--   **CityApi**:
-    -   `ConnectionStrings__DefaultConnection`: Point to your **Amazon RDS** (MSSQL) endpoint.
--   **CityWeb**:
-    -   `ApiSettings__CityApiBaseUrl`: Point to the internal URL of your `CityApi` service (e.g., `http://city-api.local:8080`).
+#### Deployment Command
+To deploy the stack to AWS, use the following CLI command (replace placeholders with your specific IDs):
+
+```powershell
+aws cloudformation deploy `
+  --stack-name CityProject-Prod `
+  --template-file cloudformation.yaml `
+  --region ap-south-1 `
+  --capabilities CAPABILITY_IAM `
+  --parameter-overrides `
+    VpcId="vpc-XXXXXX" `
+    PrivateSubnet1="subnet-XXXXXX" `
+    PrivateSubnet2="subnet-XXXXXX" `
+    PublicSubnet1="subnet-XXXXXX" `
+    PublicSubnet2="subnet-XXXXXX" `
+    DatabasePassword="YourSecurePassword123_" `
+    CityApiImageUri="248732772276.dkr.ecr.ap-south-1.amazonaws.com/city-project:api-latest" `
+    CityWebImageUri="248732772276.dkr.ecr.ap-south-1.amazonaws.com/city-project:web-latest"
+```
+
+### 3. Configuration & Networking
+-   **Frontend-to-Backend**: `CityWeb` connects to `CityApi` using the internal DNS name `http://api.cityproject.local:8080` provided by Cloud Map.
+-   **Database**: `CityApi` connects to the RDS instance via the connection string automatically injected into the container's environment variables.
 
 ## Project Structure
 -   `/CityWeb`: Razor Pages project.
 -   `/CityApi`: Web API project with EF Core logic.
+-   `cloudformation.yaml`: AWS Infrastructure-as-Code template.
 -   `docker-compose.yml`: Local orchestration.
 -   `CityProject.sln`: Visual Studio Solution.
 -   `build-and-push.bat`: AWS ECR automation script.
+
