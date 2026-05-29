@@ -1,0 +1,29 @@
+# .gitignore for .NET and Docker
+
+# IDE folders
+.vs/
+.vscode/
+*.swp
+*.user
+*.userosscache
+*.sln.docuser
+
+# Build artifacts
+bin/
+obj/
+publish/
+
+# Docker
+.dockerignore
+# (Keep the actual Dockerfiles and docker-compose.yml)
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docuser
+
+# OS generated files
+.DS_Store
+Thumbs.db

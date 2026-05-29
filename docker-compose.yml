@@ -1,0 +1,37 @@
+services:
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: city-db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong!Pass123
+    ports:
+      - "1433:1433"
+
+  city-api:
+    build:
+      context: ./CityApi
+      dockerfile: Dockerfile
+    container_name: city-api
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sql-server;Database=CityDb;User Id=sa;Password=YourStrong!Pass123;TrustServerCertificate=True
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5000:8080"
+    depends_on:
+      - sql-server
+
+  city-web:
+    build:
+      context: ./CityWeb
+      dockerfile: Dockerfile
+    container_name: city-web
+    environment:
+      - ApiSettings__CityApiBaseUrl=http://city-api:8080
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"
+    depends_on:
+      - city-api
